@@ -10,10 +10,12 @@ class BlogsController < ApplicationController
   end
 
   def show
-    blog = Blog.find(params[:id])
-    raise ActiveRecord::RecordNotFound, "Couldn't find Blog with 'id'=#{params[:id]}" if blog.secret && !blog.owned_by?(current_user)
-
-    @blog = blog
+    if current_user
+      @blog = Blog.published.find_by(id: params[:id])
+      @blog = Blog.where('user_id = ?', current_user.id).find(params[:id]) if @blog.nil?
+    else
+      @blog = Blog.published.find(params[:id])
+    end
   end
 
   def new

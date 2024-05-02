@@ -10,12 +10,11 @@ class BlogsController < ApplicationController
   end
 
   def show
-    if current_user
-      @blog = Blog.published.find_by(id: params[:id])
-      @blog = Blog.where('user_id = ?', current_user.id).find(params[:id]) if @blog.nil?
-    else
-      @blog = Blog.published.find(params[:id])
-    end
+    @blog = if current_user
+              Blog.published.or(Blog.own_secret(current_user)).find(params[:id])
+            else
+              Blog.published.find(params[:id])
+            end
   end
 
   def new
